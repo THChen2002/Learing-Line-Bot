@@ -25,9 +25,14 @@ def show_articles(event):
 
 # 朗讀文章
 def read_paragraph(event, root_url, article_id, paragraph_id):
-    paragraph = firebaseService.get_data('articles', f"article_{article_id}").get('paragraphs')[paragraph_id-1]
+    paragraphs = firebaseService.get_data('articles', f"article_{article_id}").get('paragraphs')
+    paragraph = paragraphs[paragraph_id-1]
     audio_url = f"{root_url}static/article_{article_id}/p{paragraph_id}.wav"
-    audio_duration = round(librosa.get_duration(path=f"static/article_{article_id}/p{paragraph_id}.wav")*1000)
+    audio_duration = paragraph.get('audio_duration')
+    if not audio_duration:
+        audio_duration = round(librosa.get_duration(path=f"static/article_{article_id}/p{paragraph_id}.wav")*1000)
+        paragraphs[paragraph_id-1]['audio_duration'] = audio_duration
+        firebaseService.update_data('articles', f"article_{article_id}", {'paragraphs': paragraphs})
     LineBotHelper.reply_message(event, [
         ImageMessage(original_content_url=paragraph.get('image_url'), preview_image_url=paragraph.get('image_url')),
         AudioMessage(original_content_url=audio_url, duration=audio_duration)
