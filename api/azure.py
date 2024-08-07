@@ -35,7 +35,7 @@ class AzureService:
                 if translation:
                     detected_language = translation.detected_language
                     result = ''
-                    if detected_language == 'en':
+                    if detected_language.language == 'en':
                         print(f"偵測到輸入的語言: {detected_language.language} 信心分數: {detected_language.score}")
                         for translated_text in translation.translations:
                             result += f"單字: {words}\n翻譯: {translated_text.text}"
