@@ -265,7 +265,7 @@ def handle_postback(event):
                 LineBotHelper.reply_message(event, [FlexMessage(alt_text='功能選單', contents=FlexContainer.from_json(line_flex_str))])
                 return
     except Exception as e:
-        print(e)
+        app.logger.error(e)
         LineBotHelper.reply_message(event, [TextMessage(text='發生錯誤，請聯繫管理員！')])
 
 if __name__ == "__main__":
