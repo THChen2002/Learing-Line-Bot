@@ -1,6 +1,6 @@
 from config import Config
 import task
-from api.linebot_helper import LineBotHelper, QuickReplyHelper
+from api.linebot_helper import LineBotHelper, QuickReplyHelper, RichmenuHelper
 from flask import Flask, request, abort
 from linebot.v3.exceptions import (
     InvalidSignatureError
@@ -32,6 +32,10 @@ firebaseService = config.firebaseService
 
 # 第一次沒有音檔，先生成音檔
 # task.generate_speech()
+
+# 處理Richmenu
+# RichmenuHelper.delete_all_richmenu()
+# RichmenuHelper.create_richmenu_()
 
 # domain root
 @app.route('/')

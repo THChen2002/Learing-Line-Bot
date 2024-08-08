@@ -1,7 +1,8 @@
 from config import Config
 from linebot.v3.messaging import (
     ApiClient,
-    MessagingApi,
+    MessagingApi,    
+    MessagingApiBlob,
     ReplyMessageRequest,
     URIAction,
     MessageAction,
@@ -9,6 +10,7 @@ from linebot.v3.messaging import (
     RichMenuSwitchAction,
     QuickReply,
     QuickReplyItem,
+    RichMenuRequest,
     ShowLoadingAnimationRequest
 )
 import random
@@ -103,3 +105,49 @@ class QuickReplyHelper:
         return QuickReply(
             items=[QuickReplyItem(action=LineBotHelper.create_action(json.loads(item))) for item in quick_reply_data]
         )
+
+class RichmenuHelper:
+    @staticmethod
+    def create_richmenu_():
+        """創建圖文選單"""
+        with ApiClient(configuration) as api_client:
+            line_bot_api = MessagingApi(api_client)
+            line_bot_blob_api = MessagingApiBlob(api_client)
+
+            # Step 1. 創建圖文選單(圖文選單的大小、名稱、聊天室的文字、按鈕的區域)
+            rich_menu_str = firebaseService.get_data('rich_menu', 'main').get('richmenu')
+            # 創建的時候會回傳 rich_menu_id
+            rich_menu_id = line_bot_api.create_rich_menu(
+                rich_menu_request=RichMenuRequest.from_json(rich_menu_str)
+            ).rich_menu_id
+
+            # Step 2. 設定 Rich Menu 的圖片
+            # 方式一: 使用 URL
+            # rich_menu_url = "https://example.com/richmenu.png"
+            # response = requests.get(rich_menu_url)
+            # line_bot_blob_api.set_rich_menu_image(
+            #     rich_menu_id=rich_menu_id,
+            #     body=response.content,
+            #     _headers={'Content-Type': 'image/png'}
+            # )
+
+            # 方式二: 使用本地端的圖片
+            with open('static/images/richmenu.png', 'rb') as image:
+                line_bot_blob_api.set_rich_menu_image(
+                    rich_menu_id=rich_menu_id,
+                    body=bytearray(image.read()),
+                    _headers={'Content-Type': 'image/png'}
+                )
+
+            # Step3. 設定預設的圖文選單
+            line_bot_api.set_default_rich_menu(rich_menu_id)
+    
+    @staticmethod
+    def delete_all_richmenu():
+        """刪除圖文選單"""
+        with ApiClient(configuration) as api_client:
+            line_bot_api = MessagingApi(api_client)
+            richmenu_list = line_bot_api.get_rich_menu_list()
+            for richmenu in richmenu_list.richmenus:
+                line_bot_api.delete_rich_menu(richmenu.rich_menu_id)
+                print(richmenu.rich_menu_id)

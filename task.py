@@ -89,6 +89,14 @@ def generate_question_line_flex(question: dict, question_no: int):
 def generate_answer_line_flex(question: dict, is_correct: bool):
     line_flex_quiz = firebaseService.get_data('line_flex', 'quiz')
     line_flex_str = line_flex_quiz.get('correct') if is_correct else line_flex_quiz.get('wrong')
+
+    total_correct_amount = question.get(f"{question.get('answer').upper()}_vote_count")
+    total_correct_amount += 1 if is_correct else 0
+    total_count = question.get('total_count') + 1
+    correct_rate = round(total_correct_amount / total_count*100)
+    question.update({
+        'correct_rate': correct_rate
+    })
     line_flex_str = LineBotHelper.replace_variable(line_flex_str, question)
     # 詳解有些有\n
     line_flex_str = line_flex_str.replace('\n', '\\n')
