@@ -46,11 +46,11 @@ def lookup_word(event, article_id):
     if user_msg in words:
         translation_urls = words.get(user_msg)
         LineBotHelper.reply_message(event, [ImageMessage(original_content_url=url, preview_image_url=url) for url in translation_urls])
-        spreadsheetService.add_record('log', [user_id, "VS", article_id, ','.join(['1', user_msg]), event.timestamp])
+        spreadsheetService.add_record('log', [user_id, article_id, "VS", ','.join(['1', user_msg]), event.timestamp])
     else:
         translation_text = azureService.azure_translate(user_msg, 'zh-Hant')
         LineBotHelper.reply_message(event, [TextMessage(text=translation_text)])
-        spreadsheetService.add_record('log', [user_id, "VS", article_id, ','.join(['0', user_msg]), event.timestamp])
+        spreadsheetService.add_record('log', [user_id, article_id, "VS", ','.join(['0', user_msg]), event.timestamp])
 
 # 顯示片語清單
 def show_phrases(event, article_id):

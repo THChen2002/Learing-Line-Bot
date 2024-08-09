@@ -143,7 +143,7 @@ def handle_postback(event):
             if paragraph:
                 # 朗讀段落
                 task.read_paragraph(event, root_url, article_id, int(paragraph))
-                spreadsheetService.add_record('log', [user_id, "AA", article_id, int(paragraph), event.timestamp])
+                spreadsheetService.add_record('log', [user_id, article_id, "AA", int(paragraph), event.timestamp])
                 return
             else:
                 # 選擇段落
@@ -166,7 +166,7 @@ def handle_postback(event):
                 phrase = firebaseService.get_data('articles', f"article_{article_id}").get('phrases')[int(phrase_id)-1]
                 explanation_url = phrase.get('explanation_url')
                 LineBotHelper.reply_message(event, [ImageMessage(original_content_url=explanation_url, preview_image_url=explanation_url)])
-                spreadsheetService.add_record('log', [user_id, "IP", article_id, phrase.get('phrase'), event.timestamp])
+                spreadsheetService.add_record('log', [user_id, article_id, "IP", phrase.get('phrase'), event.timestamp])
                 return
             else:
                 # 顯示片語清單
@@ -224,7 +224,7 @@ def handle_postback(event):
                         FlexMessage(alt_text='測驗解答', contents=FlexContainer.from_json(answer_line_flex_str)),
                         FlexMessage(alt_text='測驗結果', contents=FlexContainer.from_json(result_line_flex_str))
                     ])
-                    spreadsheetService.add_record('log', [user_id, "RE", last_quiz_question.get('article_id'), temp_data.get('quiz_id'), event.timestamp])
+                    spreadsheetService.add_record('log', [user_id, last_quiz_question.get('article_id'), "RE", temp_data.get('quiz_id'), event.timestamp])
                     return
             else:
                 # 閱讀測驗
