@@ -8,6 +8,7 @@ from linebot.v3.messaging import (
     FlexMessage,
     FlexContainer,
     PostbackAction,
+    ConfirmTemplate,
     ImageCarouselColumn,
     ImageCarouselTemplate
 )
@@ -17,6 +18,17 @@ config = Config()
 spreadsheetService = config.spreadsheetService
 firebaseService = config.firebaseService
 azureService = config.azureService
+
+# 詢問使用者性別
+def ask_for_gender(event):
+    template = ConfirmTemplate(
+        text='請問您的生理性別是？',
+        actions=[
+            PostbackAction(label='男性', data='action=0&gender=M', display_text='男性'),
+            PostbackAction(label='女性', data='action=0&gender=F', display_text='女性')
+        ]
+    )
+    LineBotHelper.reply_message(event, [TemplateMessage(alt_text='請問您的性別是？', template=template)])
 
 # 顯示文章清單
 def show_articles(event):
@@ -103,7 +115,7 @@ def generate_answer_line_flex(question: dict, is_correct: bool):
     return line_flex_str
 
 # 記錄該題作答(選擇的答案人數+1) + 紀錄該題答題人數
-def create_answer_record(user_id: str, quiz_id: str, question: dict, answer: str):
+def create_answer_record(user_id: str, quiz_id: str, question: dict, answer: str, timestamp: int):
     # 紀錄該題的答案人數
     culumn_map = {
         'a': 'A_vote_count',
@@ -120,7 +132,7 @@ def create_answer_record(user_id: str, quiz_id: str, question: dict, answer: str
     # 紀錄該題作答
     question_id = question.get('id')
     wks = spreadsheetService.sh.worksheet_by_title('quiz_record')
-    wks.append_table(values=[quiz_id, user_id, question_id, answer])
+    wks.append_table(values=[quiz_id, user_id, question_id, answer, timestamp])
 
 
 

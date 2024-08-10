@@ -61,7 +61,8 @@ def callback():
 @line_handler.add(FollowEvent)
 def handle_follow(event):
     LineBotHelper.show_loading_animation(event)
-    LineBotHelper.reply_message(event, [TextMessage(text='歡迎使用此服務！\n請輸入功能文字或點擊下方功能選單！')])
+    # 詢問使用者性別
+    task.ask_for_gender(event)
     user_info = LineBotHelper.get_user_info(event.source.user_id)
     spreadsheetService.add_record('user_info', user_info)
 
@@ -127,17 +128,22 @@ def handle_postback(event):
         # 使用者暫存資料
         temp = firebaseService.get_data('temp', user_id)
         article_id = article_id if article_id else (temp.get('article_id') if temp else None)
-        # if temp and (action == '1' or action == '3'):
-        #     # 刪除暫存資料
-        #     firebaseService.delete_data('temp', user_id)
 
-        # 如果沒有文章ID，則顯示文章清單
-        # if not (article_id or (temp and temp.get('article_id'))):
         if not article_id:
             task.show_articles(event)
             return
 
-        if action == '1':
+        if action == '0':
+            # 得知使用者性別
+            gender = params.get('gender')
+            wks = spreadsheetService.sh.worksheet_by_title('user_info')
+            col_index = spreadsheetService.get_column_index(wks, 'gender')
+            row_index = wks.get_col(1).index(user_id) + 1
+            spreadsheetService.update_cell_value('user_info', (row_index, col_index), gender)
+            LineBotHelper.reply_message(event, [TextMessage(text='歡迎使用此服務！\n請輸入功能文字或點擊下方功能選單！')])
+            return
+
+        elif action == '1':
             firebaseService.add_data('temp', user_id, {'article_id': article_id, 'action': '1'})
             paragraph = params.get('paragraph')
             if paragraph:
@@ -193,7 +199,7 @@ def handle_postback(event):
 
                 # 記錄該題作答(選擇的答案人數+1)
                 last_quiz_question_type = last_quiz_question.get('type')
-                task.create_answer_record(user_id, temp_data.get('quiz_id'), last_quiz_question, answer)
+                task.create_answer_record(user_id, temp_data.get('quiz_id'), last_quiz_question, answer, event.timestamp)
                 if is_correct:
                     temp_data['correct_amount'][last_quiz_question_type] += 1
                     temp_data['correct_amount']['total'] += 1
